@@ -1,0 +1,22 @@
+{
+  "name": "hacker-pouch",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "angular": "^1.5.7",
+    "angular-route": "^1.5.7",
+    "bootstrap": "^3.3.6"
+  },
+  "devDependencies": {
+    "browserify": "^13.0.1",
+    "serve": "^1.4.0",
+    "tape": "^4.6.0",
+    "watchify": "^3.7.0"
+  }
+}
