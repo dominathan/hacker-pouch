@@ -3,8 +3,11 @@ module.exports = {
 
   },
 
-  controller: function() {
-    
+  controller: function(HackerPouchService) {
+    HackerPouchService.getNews()
+      // .then(function(data) {
+      //   console.log(data)
+      // })
   },
 
   template: `
