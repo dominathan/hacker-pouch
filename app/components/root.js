@@ -7,7 +7,7 @@ module.exports = {
     const $ctrl = this
     $ctrl.stories = [];
 
-    HackerPouchService.getNews()
+    HackerPouchService.getDocs()
       .then(function (data) {
         $scope.$apply(function() {
           $ctrl.stories = data

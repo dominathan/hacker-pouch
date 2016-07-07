@@ -10,13 +10,12 @@ module.exports = function ($http) {
   var baseUrl = 'https://hacker-news.firebaseio.com/v0'
 
   return {
-    getNews: getNews,
     getDocs: getDocs,
     init: init
   }
 
   function init() {
-    
+
   }
 
   function getNews () {
@@ -36,22 +35,19 @@ module.exports = function ($http) {
       .then(function (data) {
         return data.map(cleanStory)
       })
-      .then(function(cleanData) {
-        return bulkInsert(cleanData)
-      })
-      .then(function(dbInsertedData) {
-        console.log('What is this shit', dbInsertedData)
-        resolve(dbInsertedData)
+      .then(function (cleanData) {
+        bulkInsert(cleanData)
+        resolve(cleanData)
       })
       .catch(function (err) {
-        console.log('well shit', err)
+        console.log("ERROR GETTING NEWS", err)
         reject(err)
       })
     })
   }
 
 
-  function cleanStory(story) {
+  function cleanStory (story) {
     return {
       _id: story.data.id.toString(),
       title: story.data.title,
@@ -64,34 +60,43 @@ module.exports = function ($http) {
     }
   }
 
-  function insertDB(item) {
+  function insertDB (item) {
     db.put(item)
-      .then(function(resp) {
+      .then(function (resp) {
         console.log("CREATED Successfully", resp)
       })
-      .catch(function(err) {
+      .catch(function (err) {
         console.log("DID NOT CREATE", err)
       })
   }
 
-  function bulkInsert(items) {
+  function bulkInsert (items) {
     return db.bulkDocs(items)
   }
 
-  function getDocs() {
-    return new Promise(function(resolve, reject) {
+  function getDocs () {
+    return new Promise(function (resolve, reject) {
       db.allDocs({include_docs: true})
-        .then(function(results) {
+        .then(function (results) {
           if(results.total_rows) {
             return results.rows.map(cleanDBStory)
           } else {
-            reject({error: "Not Info"})
+            return new Promise(function (resolver,rejecter) {
+              getNews()
+              .then(function (data) {
+                return resolver(data)
+              })
+              .catch(function (err) {
+                rejecter(err)
+              })
+            })
           }
         })
         .then(function(cleanData) {
           resolve(cleanData)
         })
         .catch(function(err) {
+          console.log("WELL SHIT", err)
           reject(err)
         })
     })
