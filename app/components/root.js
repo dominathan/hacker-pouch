@@ -3,14 +3,13 @@ module.exports = {
 
   },
 
-  controller: function(HackerPouchService) {
-    HackerPouchService.getNews()
-      // .then(function(data) {
-      //   console.log(data)
-      // })
+  controller: function (HackerPouchService) {
+    // HackerPouchService.getNews()
+
   },
 
   template: `
-    <h3>TEMPLATE ROOT</h3>
+    <navbar></navbar>
+    <story-container></story-container>
   `
 }

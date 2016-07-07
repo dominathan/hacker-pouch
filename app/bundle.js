@@ -4,65 +4,114 @@ require('angular-route')
 
 var HackerPouchService = require('./services/hacker-pouch.service')
 var RootComponent = require('./components/root')
+var NavBarComponent = require('./components/navbar')
+var StoryContainerComponent = require('./components/story-container')
 
 angular
-  .module("hacker-pouch",[
+  .module('hacker-pouch', [
     'ngRoute'
   ])
   .factory('HackerPouchService', HackerPouchService)
   .component('root', RootComponent)
+  .component('navbar', NavBarComponent)
+  .component('storyContainer', StoryContainerComponent)
 
-},{"./components/root":2,"./services/hacker-pouch.service":3,"angular":7,"angular-route":5}],2:[function(require,module,exports){
+},{"./components/navbar":2,"./components/root":3,"./components/story-container":4,"./services/hacker-pouch.service":5,"angular":9,"angular-route":7}],2:[function(require,module,exports){
 module.exports = {
   bindings: {
 
   },
 
-  controller: function(HackerPouchService) {
-    HackerPouchService.getNews()
-      // .then(function(data) {
-      //   console.log(data)
-      // })
+  controller: function () {
+
   },
 
   template: `
-    <h3>TEMPLATE ROOT</h3>
+    <header>
+      <nav>
+        <h2>Hacker Pouch</h2>
+        <ul>
+          <li> new </li> |
+          <li> comments </li> |
+          <li> show </li> |
+          <li> ask </li> |
+          <li> jobs </li> |
+          <li> submit </li>
+      </nav>
+    </header>
   `
 }
 
 },{}],3:[function(require,module,exports){
-module.exports = function($http) {
+module.exports = {
+  bindings: {
 
-  var baseUrl = 'https://hacker-news.firebaseio.com/v0'
+  },
 
-  return {
-      getNews: getNews
-  }
+  controller: function (HackerPouchService) {
+    // HackerPouchService.getNews()
 
-  function getNews() {
-     $http.get(`${baseUrl}/newstories.json`)
-      .then(function(newStoryIds) {
-        return newStoryIds.data.slice(0,29)
-      })
-      .then(function(top30StoryIds) {
-        var promiseLibs = []
-        top30StoryIds.forEach(function(storyId) {
+  },
 
-          promiseLibs.push($http.get(`${baseUrl}/item/${storyId}.json`))
-        })
-
-        return Promise.all(promiseLibs)
-      })
-      .then(function(data) {
-        console.log("NO WAY", data)
-      })
-      .catch(function(err) {
-        console.log("well shit", err)
-      })
-  }
+  template: `
+    <navbar></navbar>
+    <story-container></story-container>
+  `
 }
 
 },{}],4:[function(require,module,exports){
+module.exports = {
+  bindings: {
+
+  },
+
+  controller: function() {},
+
+  template: `
+    <div class='container'>
+      <ul>
+        <li>Story 1</li>
+        <li>Story 2</li>
+        <li>Story 3</li>
+        <li>Story 4</li>
+        <li>Story 5</li>
+        <li>Story 6</li>
+      </ul>
+    </div>
+  `
+}
+
+},{}],5:[function(require,module,exports){
+module.exports = function ($http) {
+  var baseUrl = 'https://hacker-news.firebaseio.com/v0'
+
+  return {
+    getNews: getNews
+  }
+
+  function getNews () {
+    $http.get(`${baseUrl}/newstories.json`)
+    .then(function (newStoryIds) {
+      return newStoryIds.data.slice(0, 29)
+    })
+    .then(function (top30StoryIds) {
+      var promiseLibs = []
+      top30StoryIds.forEach(function (storyId) {
+        promiseLibs.push($http.get(`${baseUrl}/item/${storyId}.json`))
+      })
+
+      return Promise.all(promiseLibs)
+    })
+    .then(function (data) {
+      console.log('NO WAY', data)
+    })
+    .catch(function (err) {
+      console.log('well shit', err)
+    })
+  }
+}
+
+},{}],6:[function(require,module,exports){
 /**
  * @license AngularJS v1.5.7
  * (c) 2010-2016 Google, Inc. http://angularjs.org
@@ -1129,11 +1178,11 @@ function ngViewFillContentFactory($compile, $controller, $route) {
 
 })(window, window.angular);
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 require('./angular-route');
 module.exports = 'ngRoute';
 
-},{"./angular-route":4}],6:[function(require,module,exports){
+},{"./angular-route":6}],8:[function(require,module,exports){
 /**
  * @license AngularJS v1.5.7
  * (c) 2010-2016 Google, Inc. http://angularjs.org
@@ -32607,8 +32656,8 @@ $provide.value("$locale", {
 })(window);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 require('./angular');
 module.exports = angular;
 
-},{"./angular":6}]},{},[1]);
+},{"./angular":8}]},{},[1]);
