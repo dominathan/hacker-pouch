@@ -1,6 +1,5 @@
 var angular = require('angular')
 var angularRoute = require('angular-route')
-var PouchDB = require('pouchdb')
 
 var HackerPouchService = require('./services/hacker-pouch.service')
 var RootComponent = require('./components/root')

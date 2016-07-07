@@ -1,6 +1,7 @@
 module.exports = {
   bindings: {
-    story: '<'
+    story: '<',
+    index: '<'
   },
 
   controller: function() {
@@ -10,10 +11,12 @@ module.exports = {
   template: `
     <li class="story">
       <div class="story-title">
-        <a href="{{$ctrl.story.data.url}}">{{$ctrl.story.data.title}}</a>
+        <a href="{{$ctrl.story.url}}">
+          <span class="story-index">{{$ctrl.index + 1}}.  </span>{{$ctrl.story.title}}
+        </a>
       </div>
       <div class="story-info">
-        <span>{{$ctrl.story.data.score}} by {{$ctrl.story.data.by}} at {{$ctrl.story.data.time * 1000}} | {{$ctrl.story.data.descendents.length}} Comments
+        <span>{{$ctrl.story.score}} by {{$ctrl.story.by}} at {{$ctrl.story.time * 1000}} | {{$ctrl.story.descendants}} Comments </span>
       </div>
     </li>
   `

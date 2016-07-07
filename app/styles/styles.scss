@@ -44,6 +44,7 @@ header {
   }
   li {
     margin: 1%;
+    list-style: none;
   }
   .story-title a {
     color: rgb(108,203,153);
@@ -52,5 +53,9 @@ header {
   }
   .story-info span{
     color: #000;
+    margin-left: 2%;
+  }
+  .story-index {
+    color: rgb(250,74,53);
   }
 }

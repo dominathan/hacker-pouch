@@ -35,10 +35,14 @@ header {
   .container ul {
     margin: 0; }
   .container li {
-    margin: 1%; }
+    margin: 1%;
+    list-style: none; }
   .container .story-title a {
     color: #6ccb99;
     font-size: 1.3em;
     text-decoration: none; }
   .container .story-info span {
-    color: #000; }
+    color: #000;
+    margin-left: 2%; }
+  .container .story-index {
+    color: #fa4a35; }

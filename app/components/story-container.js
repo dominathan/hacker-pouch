@@ -1,6 +1,6 @@
 module.exports = {
   bindings: {
-    stories: '<'
+    stories: '<',
   },
 
   controller: function() {
@@ -11,7 +11,7 @@ module.exports = {
   template: `
     <div class='container'>
       <ul>
-        <story ng-repeat="story in $ctrl.stories" story='story'></story>
+        <story ng-repeat="story in $ctrl.stories track by $index" index='$index' story='story'></story>
       </ul>
     </div>
   `

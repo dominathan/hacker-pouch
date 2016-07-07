@@ -1,7 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var angular = require('angular')
 var angularRoute = require('angular-route')
-var PouchDB = require('pouchdb')
 
 var HackerPouchService = require('./services/hacker-pouch.service')
 var RootComponent = require('./components/root')
@@ -19,7 +18,7 @@ angular
   .component('storyContainer', StoryContainerComponent)
   .component('story',StoryComponent)
 
-},{"./components/navbar":2,"./components/root":3,"./components/story":5,"./components/story-container":4,"./services/hacker-pouch.service":6,"angular":10,"angular-route":8,"pouchdb":24}],2:[function(require,module,exports){
+},{"./components/navbar":2,"./components/root":3,"./components/story":5,"./components/story-container":4,"./services/hacker-pouch.service":6,"angular":10,"angular-route":8}],2:[function(require,module,exports){
 module.exports = {
   bindings: {
 
@@ -75,7 +74,7 @@ module.exports = {
 },{}],4:[function(require,module,exports){
 module.exports = {
   bindings: {
-    stories: '<'
+    stories: '<',
   },
 
   controller: function() {
@@ -86,7 +85,7 @@ module.exports = {
   template: `
     <div class='container'>
       <ul>
-        <story ng-repeat="story in $ctrl.stories" story='story'></story>
+        <story ng-repeat="story in $ctrl.stories track by $index" index='$index' story='story'></story>
       </ul>
     </div>
   `
@@ -95,7 +94,8 @@ module.exports = {
 },{}],5:[function(require,module,exports){
 module.exports = {
   bindings: {
-    story: '<'
+    story: '<',
+    index: '<'
   },
 
   controller: function() {
@@ -105,16 +105,26 @@ module.exports = {
   template: `
     <li class="story">
       <div class="story-title">
-        <a href="{{$ctrl.story.data.url}}">{{$ctrl.story.data.title}}</a>
+        <a href="{{$ctrl.story.url}}">
+          <span class="story-index">{{$ctrl.index + 1}}.  </span>{{$ctrl.story.title}}
+        </a>
       </div>
       <div class="story-info">
-        <span>{{$ctrl.story.data.score}} by {{$ctrl.story.data.by}} at {{$ctrl.story.data.time * 1000}} | {{$ctrl.story.data.descendents.length}} Comments
+        <span>{{$ctrl.story.score}} by {{$ctrl.story.by}} at {{$ctrl.story.time * 1000}} | {{$ctrl.story.descendants}} Comments </span>
       </div>
     </li>
   `
 }
 
 },{}],6:[function(require,module,exports){
+
+var PouchDB = require('pouchdb')
+var db = new PouchDB('hacker-pouch')
+
+if(window) {
+  window.PouchDB = db
+}
+
 module.exports = function ($http) {
   var baseUrl = 'https://hacker-news.firebaseio.com/v0'
 
@@ -124,9 +134,9 @@ module.exports = function ($http) {
 
   function getNews () {
     return new Promise(function(resolve,reject) {
-      $http.get(`${baseUrl}/newstories.json`)
+      $http.get(`${baseUrl}/topstories.json`)
       .then(function (newStoryIds) {
-        return newStoryIds.data.slice(0, 29)
+        return newStoryIds.data.slice(0, 30)
       })
       .then(function (top30StoryIds) {
         var promiseLibs = []
@@ -137,7 +147,11 @@ module.exports = function ($http) {
         return Promise.all(promiseLibs)
       })
       .then(function (data) {
-        resolve(data)
+        return data.map(cleanStory)
+      })
+      .then(function(cleanData) {
+        cleanData.map(insertDB)
+        resolve(cleanData)
       })
       .catch(function (err) {
         console.log('well shit', err)
@@ -145,9 +159,35 @@ module.exports = function ($http) {
       })
     })
   }
+
+
+  function cleanStory(story) {
+    return {
+      _id: story.data.id.toString(),
+      title: story.data.title,
+      by: story.data.by,
+      time: story.data.time,
+      descendants: story.data.descendants,
+      url: story.data.url,
+      kids: story.data.kids,
+      score: story.data.score
+    }
+  }
+
+  function insertDB(item) {
+    db.put(item)
+      .then(function(resp) {
+        console.log("CREATED Successfully", resp)
+      })
+      .catch(function(err) {
+        console.log("DID NOT CREATE", err)
+      })
+  }
+
+
 }
 
-},{}],7:[function(require,module,exports){
+},{"pouchdb":24}],7:[function(require,module,exports){
 /**
  * @license AngularJS v1.5.7
  * (c) 2010-2016 Google, Inc. http://angularjs.org
