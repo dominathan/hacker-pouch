@@ -25,6 +25,7 @@ header {
     width: 50%;
   }
   li {
+    color: rgb(250,74,53);
     display: inline-block;
     padding: 0 1%;
     &:hover {
@@ -36,8 +37,20 @@ header {
 
 .container {
   width: 100%;
+  padding-top: 1%;
   background-color: rgb(238,238,238);
   ul {
     margin: 0;
+  }
+  li {
+    margin: 1%;
+  }
+  .story-title a {
+    color: rgb(108,203,153);
+    font-size: 1.3em;
+    text-decoration: none;
+  }
+  .story-info span{
+    color: #000;
   }
 }

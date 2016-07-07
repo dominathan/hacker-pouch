@@ -21,6 +21,7 @@ header {
     font-size: 1.2em;
     width: 50%; }
   header li {
+    color: #fa4a35;
     display: inline-block;
     padding: 0 1%; }
     header li:hover {
@@ -29,6 +30,15 @@ header {
 
 .container {
   width: 100%;
+  padding-top: 1%;
   background-color: #eeeeee; }
   .container ul {
     margin: 0; }
+  .container li {
+    margin: 1%; }
+  .container .story-title a {
+    color: #6ccb99;
+    font-size: 1.3em;
+    text-decoration: none; }
+  .container .story-info span {
+    color: #000; }
