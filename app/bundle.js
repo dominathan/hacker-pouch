@@ -129,7 +129,13 @@ module.exports = function ($http) {
   var baseUrl = 'https://hacker-news.firebaseio.com/v0'
 
   return {
-    getNews: getNews
+    getNews: getNews,
+    getDocs: getDocs,
+    init: init
+  }
+
+  function init() {
+    
   }
 
   function getNews () {
@@ -150,8 +156,11 @@ module.exports = function ($http) {
         return data.map(cleanStory)
       })
       .then(function(cleanData) {
-        cleanData.map(insertDB)
-        resolve(cleanData)
+        return bulkInsert(cleanData)
+      })
+      .then(function(dbInsertedData) {
+        console.log('What is this shit', dbInsertedData)
+        resolve(dbInsertedData)
       })
       .catch(function (err) {
         console.log('well shit', err)
@@ -182,6 +191,43 @@ module.exports = function ($http) {
       .catch(function(err) {
         console.log("DID NOT CREATE", err)
       })
+  }
+
+  function bulkInsert(items) {
+    return db.bulkDocs(items)
+  }
+
+  function getDocs() {
+    return new Promise(function(resolve, reject) {
+      db.allDocs({include_docs: true})
+        .then(function(results) {
+          if(results.total_rows) {
+            return results.rows.map(cleanDBStory)
+          } else {
+            reject({error: "Not Info"})
+          }
+        })
+        .then(function(cleanData) {
+          resolve(cleanData)
+        })
+        .catch(function(err) {
+          reject(err)
+        })
+    })
+  }
+
+  function cleanDBStory(story) {
+    return {
+      _id: story.doc._id.toString(),
+      _rev: story.doc._rev,
+      title: story.doc.title,
+      by: story.doc.by,
+      time: story.doc.time,
+      descendants: story.doc.descendants,
+      url: story.doc.url,
+      kids: story.doc.kids,
+      score: story.doc.score
+    }
   }
 
 
