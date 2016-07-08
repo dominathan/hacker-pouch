@@ -2,7 +2,7 @@
 var PouchDB = require('pouchdb')
 var db = new PouchDB('hacker-pouch')
 
-if(window) {
+if (window) {
   window.PouchDB = db
 }
 
@@ -13,13 +13,13 @@ module.exports = function ($http) {
   return {
     getDocs: getDocs,
     getNews: getNews,
-    update: function(fn) {
+    update: function (fn) {
       listeners.push(fn)
     }
   }
 
   function getNews (word) {
-    return new Promise(function(resolve,reject) {
+    return new Promise(function (resolve, reject) {
       $http.get(`${baseUrl}/${word}stories.json`)
       .then(function (newStoryIds) {
         return newStoryIds.data.slice(0, 30)
@@ -41,11 +41,10 @@ module.exports = function ($http) {
         listeners[0](_.clone(cleanData))
       })
       .catch(function (err) {
-        console.log("ERROR GETTING NEWS", err)
+        console.log('ERROR GETTING NEWS', err)
         reject(err)
       })
     })
-
   }
 
   function cleanStory (story) {
@@ -63,16 +62,6 @@ module.exports = function ($http) {
     }
   }
 
-  function insertDB (item) {
-    db.put(item)
-      .then(function (resp) {
-        console.log("CREATED Successfully", resp)
-      })
-      .catch(function (err) {
-        console.log("DID NOT CREATE", err)
-      })
-  }
-
   function bulkInsert (items) {
     return db.bulkDocs(items)
   }
@@ -81,10 +70,10 @@ module.exports = function ($http) {
     return new Promise(function (resolve, reject) {
       db.allDocs({include_docs: true})
         .then(function (results) {
-          if(results.total_rows) {
-            return results.rows.slice(0,30).map(cleanDBStory)
+          if (results.total_rows) {
+            return results.rows.slice(0, 30).map(cleanDBStory)
           } else {
-            return new Promise(function (resolver,rejecter) {
+            return new Promise(function (resolver, rejecter) {
               getNews('top')
               .then(function (data) {
                 return resolver(data)
@@ -95,18 +84,18 @@ module.exports = function ($http) {
             })
           }
         })
-        .then(function(cleanData) {
+        .then(function (cleanData) {
           resolve(cleanData)
           listeners[0](_.clone(cleanData))
         })
-        .catch(function(err) {
-          console.log("WELL SHIT", err)
+        .catch(function (err) {
+          console.log('WELL SHIT', err)
           reject(err)
         })
     })
   }
 
-  function cleanDBStory(story) {
+  function cleanDBStory (story) {
     return {
       _id: story.doc._id.toString(),
       _rev: story.doc._rev,
@@ -121,6 +110,4 @@ module.exports = function ($http) {
       type: story.doc.type
     }
   }
-
-
 }

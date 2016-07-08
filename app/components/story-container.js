@@ -1,10 +1,9 @@
 module.exports = {
   bindings: {
-    stories: '<',
+    stories: '<'
   },
 
-  controller: function() {
-    const $ctrl = this
+  controller: function () {
 
   },
 

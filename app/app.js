@@ -13,4 +13,4 @@ angular
   .component('root', RootComponent)
   .component('navbar', NavBarComponent)
   .component('storyContainer', StoryContainerComponent)
-  .component('story',StoryComponent)
+  .component('story', StoryComponent)

@@ -3,13 +3,13 @@ module.exports = {
 
   },
 
-  controller: function ($scope,HackerPouchService) {
+  controller: function ($scope, HackerPouchService) {
     const $ctrl = this
-    $ctrl.stories = [];
+    $ctrl.stories = []
 
     HackerPouchService.getDocs()
       .then(function (data) {
-        $scope.$apply(function() {
+        $scope.$apply(function () {
           $ctrl.stories = data
         })
       })
@@ -17,7 +17,7 @@ module.exports = {
         $ctrl.stories = err
       })
 
-    HackerPouchService.update(function(stories) {
+    HackerPouchService.update(function (stories) {
       $ctrl.stories = stories
     })
   },

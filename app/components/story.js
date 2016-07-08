@@ -4,8 +4,7 @@ module.exports = {
     index: '<'
   },
 
-  controller: function() {
-    const $ctrl = this
+  controller: function () {
   },
 
   template: `

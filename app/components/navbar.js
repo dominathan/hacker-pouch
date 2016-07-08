@@ -6,8 +6,7 @@ module.exports = {
   controller: function (HackerPouchService) {
     const $ctrl = this
 
-    $ctrl.getDocs = function(word) {
-      console.log("AM I WORKING", word)
+    $ctrl.getDocs = function (word) {
       HackerPouchService.getNews(word)
     }
   },
