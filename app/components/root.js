@@ -16,6 +16,10 @@ module.exports = {
       .catch(function (err) {
         $ctrl.stories = err
       })
+
+    HackerPouchService.update(function(stories) {
+      $ctrl.stories = stories
+    })
   },
 
   template: `

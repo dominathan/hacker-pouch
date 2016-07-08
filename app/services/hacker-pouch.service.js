@@ -7,20 +7,20 @@ if(window) {
 }
 
 module.exports = function ($http) {
-  var baseUrl = 'https://hacker-news.firebaseio.com/v0'
+  const baseUrl = 'https://hacker-news.firebaseio.com/v0'
+  let listeners = []
 
   return {
     getDocs: getDocs,
-    init: init
+    getNews: getNews,
+    update: function(fn) {
+      listeners.push(fn)
+    }
   }
 
-  function init() {
-
-  }
-
-  function getNews () {
+  function getNews (word) {
     return new Promise(function(resolve,reject) {
-      $http.get(`${baseUrl}/topstories.json`)
+      $http.get(`${baseUrl}/${word}stories.json`)
       .then(function (newStoryIds) {
         return newStoryIds.data.slice(0, 30)
       })
@@ -38,14 +38,15 @@ module.exports = function ($http) {
       .then(function (cleanData) {
         bulkInsert(cleanData)
         resolve(cleanData)
+        listeners[0](_.clone(cleanData))
       })
       .catch(function (err) {
         console.log("ERROR GETTING NEWS", err)
         reject(err)
       })
     })
-  }
 
+  }
 
   function cleanStory (story) {
     return {
@@ -56,7 +57,9 @@ module.exports = function ($http) {
       descendants: story.data.descendants,
       url: story.data.url,
       kids: story.data.kids,
-      score: story.data.score
+      score: story.data.score,
+      text: story.data.text,
+      type: story.data.type
     }
   }
 
@@ -79,10 +82,10 @@ module.exports = function ($http) {
       db.allDocs({include_docs: true})
         .then(function (results) {
           if(results.total_rows) {
-            return results.rows.map(cleanDBStory)
+            return results.rows.slice(0,30).map(cleanDBStory)
           } else {
             return new Promise(function (resolver,rejecter) {
-              getNews()
+              getNews('top')
               .then(function (data) {
                 return resolver(data)
               })
@@ -94,6 +97,7 @@ module.exports = function ($http) {
         })
         .then(function(cleanData) {
           resolve(cleanData)
+          listeners[0](_.clone(cleanData))
         })
         .catch(function(err) {
           console.log("WELL SHIT", err)
@@ -112,7 +116,9 @@ module.exports = function ($http) {
       descendants: story.doc.descendants,
       url: story.doc.url,
       kids: story.doc.kids,
-      score: story.doc.score
+      score: story.doc.score,
+      text: story.doc.text,
+      type: story.doc.type
     }
   }
 

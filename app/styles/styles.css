@@ -30,7 +30,7 @@ header {
 
 .container {
   width: 100%;
-  padding-top: 1%;
+  padding: 1% 0;
   background-color: #eeeeee; }
   .container ul {
     margin: 0; }
