@@ -7,7 +7,7 @@ module.exports = {
     const $ctrl = this
 
     $ctrl.getDocs = function (word) {
-      HackerPouchService.getNews(word)
+      HackerPouchService.getDocsByWord(word)
     }
   },
 

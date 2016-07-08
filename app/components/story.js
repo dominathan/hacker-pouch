@@ -15,7 +15,7 @@ module.exports = {
         </a>
       </div>
       <div class="story-info">
-        <span>{{$ctrl.story.score}} by {{$ctrl.story.by}} at {{$ctrl.story.time * 1000}} | {{$ctrl.story.descendants}} Comments </span>
+        <span>{{$ctrl.story.score}} by {{$ctrl.story.by}} at {{$ctrl.story.time * 1000}} | {{$ctrl.story.kids.length}} Comments </span>
       </div>
     </li>
   `

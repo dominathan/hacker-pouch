@@ -1,21 +1,54 @@
-
-var PouchDB = require('pouchdb')
-var db = new PouchDB('hacker-pouch')
-
-if (window) {
-  window.PouchDB = db
-}
-
 module.exports = function ($http) {
+  const PouchDB = require('pouchdb')
+  const db = new PouchDB('hacker-pouch')
   const baseUrl = 'https://hacker-news.firebaseio.com/v0'
   let listeners = []
+
+  db.changes({
+    since: 'now',
+    live: true,
+    include_docs: true
+  }).on('change',function (change) {
+    console.log('STUFF IS UPDATING', change)
+    // listeners[0](_.clone(change.doc))
+    // getDocs()
+  }).on('complete', function(info) {
+    console.log('INFO', info)
+  }).on('error', function (err) {
+    console.log('ERROR', err)
+  });
+
+  if (window) {
+    window.db = db
+  }
 
   return {
     getDocs: getDocs,
     getNews: getNews,
+    getDocsByWord: getDocsByWord,
     update: function (fn) {
       listeners.push(fn)
     }
+  }
+
+  function getDocsByWord (word) {
+    db.allDocs({include_docs: true})
+      .then(function (data) {
+        return data.rows.filter(function (doc) {
+          return doc.doc.internalType === word
+        })
+      })
+      .then(function(dat) {
+        return dat.map(function (item) {
+          return cleanDBStory(item,word)
+        })
+      })
+      .then(function(cleanData) {
+        listeners[0](_.clone(cleanData.slice(0,30)))
+      })
+      .catch(function(err) {
+        console.log("SHIT", err)
+      })
   }
 
   function getNews (word) {
@@ -33,12 +66,12 @@ module.exports = function ($http) {
         return Promise.all(promiseLibs)
       })
       .then(function (data) {
-        return data.map(cleanStory)
+        return data.map(function(item) {
+          return cleanStory(item,word)
+        })
       })
       .then(function (cleanData) {
         bulkInsert(cleanData)
-        resolve(cleanData)
-        listeners[0](_.clone(cleanData))
       })
       .catch(function (err) {
         console.log('ERROR GETTING NEWS', err)
@@ -47,7 +80,7 @@ module.exports = function ($http) {
     })
   }
 
-  function cleanStory (story) {
+  function cleanStory (story,word) {
     return {
       _id: story.data.id.toString(),
       title: story.data.title,
@@ -58,7 +91,8 @@ module.exports = function ($http) {
       kids: story.data.kids,
       score: story.data.score,
       text: story.data.text,
-      type: story.data.type
+      type: story.data.type,
+      internalType: word
     }
   }
 
@@ -71,7 +105,10 @@ module.exports = function ($http) {
       db.allDocs({include_docs: true})
         .then(function (results) {
           if (results.total_rows) {
-            return results.rows.slice(0, 30).map(cleanDBStory)
+            return results.rows.slice(0, 30)
+                          .map(function(item,word) {
+                            return cleanDBStory(item,word)
+                          })
           } else {
             return new Promise(function (resolver, rejecter) {
               getNews('top')
@@ -86,7 +123,6 @@ module.exports = function ($http) {
         })
         .then(function (cleanData) {
           resolve(cleanData)
-          listeners[0](_.clone(cleanData))
         })
         .catch(function (err) {
           console.log('WELL SHIT', err)
@@ -95,7 +131,7 @@ module.exports = function ($http) {
     })
   }
 
-  function cleanDBStory (story) {
+  function cleanDBStory (story,word) {
     return {
       _id: story.doc._id.toString(),
       _rev: story.doc._rev,
@@ -107,7 +143,8 @@ module.exports = function ($http) {
       kids: story.doc.kids,
       score: story.doc.score,
       text: story.doc.text,
-      type: story.doc.type
+      type: story.doc.type,
+      internalType: word
     }
   }
 }

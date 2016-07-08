@@ -18,8 +18,11 @@ module.exports = {
       })
 
     HackerPouchService.update(function (stories) {
-      $ctrl.stories = stories
+      $scope.$apply(function() {
+        $ctrl.stories = stories
+      })
     })
+
   },
 
   template: `
