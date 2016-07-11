@@ -9,7 +9,7 @@ var htmlOutput = `
         </a>
       </div>
       <div class="story-info">
-        <span>{{$ctrl.story.score}} by {{$ctrl.story.by}} at {{$ctrl.story.time}} | {{$ctrl.story.kids.length}} Comments </span>
+        <span>{{$ctrl.story.score}} by {{$ctrl.story.by}} {{$ctrl.story.time}} | {{$ctrl.story.descendants}} Comments </span>
       </div>
     </li>`
 

@@ -9,10 +9,6 @@ module.exports = function ($http) {
   const baseUrl = 'https://hacker-news.firebaseio.com/v0'
   let listeners = []
 
-  if(window) {
-    window.db = db
-  }
-
   return {
     getAllNews: getAllNews,
     getNews: getNews,
