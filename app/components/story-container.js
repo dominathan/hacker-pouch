@@ -3,15 +3,10 @@ module.exports = {
     stories: '<'
   },
 
-  controller: function () {
-
-  },
-
   template: `
     <div class='container'>
       <ul>
         <story ng-repeat="story in $ctrl.stories track by $index" index='$index' story='story'></story>
       </ul>
-    </div>
-  `
+    </div>`
 }

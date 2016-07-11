@@ -1,10 +1,7 @@
-module.exports = {
-  bindings: {
-    story: '<',
-    index: '<'
-  },
+var test = require('tape')
+var { template, controller } = require('../../components/story')
 
-  template: `
+var htmlOutput = `
     <li class="story">
       <div class="story-title">
         <a href="{{$ctrl.story.url}}">
@@ -15,4 +12,8 @@ module.exports = {
         <span>{{$ctrl.story.score}} by {{$ctrl.story.by}} at {{$ctrl.story.time}} | {{$ctrl.story.kids.length}} Comments </span>
       </div>
     </li>`
-}
+
+test('story template', function (t) {
+  t.equals(htmlOutput, template, 'should be equal')
+  t.end()
+})

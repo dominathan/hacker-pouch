@@ -1,7 +1,8 @@
-module.exports = {
-  controller: ['HackerPouchService', controller],
+var test = require('tape')
+var HackerPouchServiceMock = require('../test-utilities/mock.service')
+var { template, controller } = require('../../components/navbar')
 
-  template: `
+var htmlOutput = `
     <header>
       <nav>
         <h2 ng-click="$ctrl.getDocs('best')">Hacker Pouch</h2>
@@ -15,12 +16,18 @@ module.exports = {
           <li> submit </li>
       </nav>
     </header>`
-}
 
-function controller(HackerPouchService) {
-  const $ctrl = this
+test('navbar template', function (t) {
+  t.equals(htmlOutput, template, 'should be equal')
+  t.end()
+})
 
-  $ctrl.getDocs = function (word) {
-    HackerPouchService.getDocsByWord(word)
-  }
-}
+test('navbar controller', function (t) {
+  let c = controller[controller.length - 1]
+  let ctrl = {}
+
+  c.apply(ctrl, [HackerPouchServiceMock])
+  t.ok(ctrl.getDocs, '$ctrl.getDocs should be set')
+
+  t.end()
+})
