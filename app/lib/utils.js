@@ -1,13 +1,13 @@
 var moment = require('moment')
 
-module.exports = function() {
+module.exports = function () {
   return {
     cleanStory: cleanStory,
     cleanBulkData: cleanBulkData,
     filterByInternalType: filterByInternalType
   }
 
-  function cleanStory(story, word) {
+  function cleanStory (story, word) {
     story = story.data || story.doc
     let id = story.id || story._id
     let time = moment(new Date(story.time * 1000))
@@ -27,12 +27,11 @@ module.exports = function() {
     }
   }
 
-  function filterByInternalType(data,type) {
+  function filterByInternalType (data, type) {
     return data.rows.filter((doc) => doc.doc.internalType === type)
   }
 
-  function cleanBulkData(bulkData, word) {
-    return bulkData.map((item) => cleanStory(item,word))
+  function cleanBulkData (bulkData, word) {
+    return bulkData.map((item) => cleanStory(item, word))
   }
-
 }

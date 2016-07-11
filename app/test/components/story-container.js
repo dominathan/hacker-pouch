@@ -1,5 +1,5 @@
 var test = require('tape')
-var { template, controller } = require('../../components/story-container')
+var { template } = require('../../components/story-container')
 
 var htmlOutput = `
     <div class='container'>

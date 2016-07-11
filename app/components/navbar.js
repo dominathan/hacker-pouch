@@ -17,7 +17,7 @@ module.exports = {
     </header>`
 }
 
-function controller(HackerPouchService) {
+function controller (HackerPouchService) {
   const $ctrl = this
 
   $ctrl.getDocs = function (word) {

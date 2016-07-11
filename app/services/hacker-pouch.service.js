@@ -1,5 +1,4 @@
-var { cleanStory,
-      filterByInternalType,
+var { filterByInternalType,
       cleanBulkData
     } = require('../lib/utils')()
 
@@ -23,22 +22,22 @@ module.exports = function ($http) {
     word = word || 'top'
     getNews(word)
     db.allDocs({include_docs: true})
-      .then((data) => filterByInternalType(data,word))
-      .then((filteredData) => cleanBulkData(filteredData,word))
-      .then((cleanData) => listeners[0](_.clone(cleanData.slice(0,30))))
+      .then((data) => filterByInternalType(data, word))
+      .then((filteredData) => cleanBulkData(filteredData, word))
+      .then((cleanData) => listeners[0](_.clone(cleanData.slice(0, 30))))
       .catch(handleErrors)
   }
 
   function getAllNews () {
-    ['top','best','new','job','ask','show'].forEach(getNews)
+    ['top', 'best', 'new', 'job', 'ask', 'show'].forEach(getNews)
   }
 
   function getNews (word) {
-    return new Promise((resolve,reject) => {
+    return new Promise((resolve, reject) => {
       $http.get(`${baseUrl}/${word}stories.json`)
         .then((newStoryIds) => newStoryIds.data.slice(0, 30))
         .then((top30StoryIds) => Promise.all(top30StoryIds.map((storyId) => $http.get(`${baseUrl}/item/${storyId}.json`))))
-        .then((promiseData) => cleanBulkData(promiseData,word))
+        .then((promiseData) => cleanBulkData(promiseData, word))
         .then((cleanData) => {
           resolve(cleanData)
           bulkInsert(cleanData)
@@ -48,7 +47,7 @@ module.exports = function ($http) {
   }
 
   function handleErrors (err) {
-    console.log("ERROR", err)
+    console.log('ERROR', err)
   }
 
   function bulkInsert (items) {
@@ -67,15 +66,15 @@ module.exports = function ($http) {
   function updateDoc (hackItem) {
     db.get(hackItem._id)
       .then((doc) => {
-        if(doc.descendants !== hackItem.descendants || doc.score !== hackItem.score) {
-          return db.put(Object.assign(doc,hackItem))
+        if (doc.descendants !== hackItem.descendants || doc.score !== hackItem.score) {
+          return db.put(Object.assign(doc, hackItem))
                    .catch((err) => console.log('Error updating item', err))
         }
       })
       .catch((err) => {
-        if(err.name === "not_found") {
+        if (err.name === 'not_found') {
           db.put(hackItem)
-            .catch((error) => console.log("TROUBLE SAVING NEW ITEM", error))
+            .catch((error) => console.log('TROUBLE SAVING NEW ITEM', error))
         }
       })
   }

@@ -7,7 +7,7 @@ var htmlOutput = `
     <story-container stories='$ctrl.stories'></story-container>`
 
 var ScopeMock = {
-  $apply: function() {
+  $apply: function () {
     return
   }
 }

@@ -1,5 +1,5 @@
 var test = require('tape')
-var { template, controller } = require('../../components/story')
+var { template } = require('../../components/story')
 
 var htmlOutput = `
     <li class="story">
