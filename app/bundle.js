@@ -168,10 +168,6 @@ module.exports = function ($http) {
   const baseUrl = 'https://hacker-news.firebaseio.com/v0'
   let listeners = []
 
-  if (window) {
-    window.db = db
-  }
-
   return {
     getAllNews: getAllNews,
     getNews: getNews,
@@ -180,15 +176,6 @@ module.exports = function ($http) {
     update: function (fn) {
       listeners.push(fn)
     }
-  }
-
-  function dbChanges() {
-    db.changes({
-      since: 'now',
-      live: true,
-      include_docs: true
-    })
-    .on('change',(change) => getDocsByWord(change.doc.internalType))
   }
 
   function getDocsByWord (word) {
@@ -201,7 +188,7 @@ module.exports = function ($http) {
       .catch(handleErrors)
   }
 
-  function getAllNews() {
+  function getAllNews () {
     ['top','best','new','job','ask','show'].forEach(getNews)
   }
 
@@ -221,7 +208,7 @@ module.exports = function ($http) {
     })
   }
 
-  function handleErrors(err) {
+  function handleErrors (err) {
     console.log("ERROR", err)
   }
 
@@ -229,6 +216,14 @@ module.exports = function ($http) {
     return db.bulkDocs(items)
   }
 
+  function dbChanges () {
+    db.changes({
+      since: 'now',
+      live: true,
+      include_docs: true
+    })
+    .on('change',(change) => getDocsByWord(change.doc.internalType))
+  }
 }
 
 },{"../lib/utils":6,"pouchdb":25}],8:[function(require,module,exports){
