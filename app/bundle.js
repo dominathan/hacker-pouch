@@ -110,7 +110,7 @@ module.exports = {
         </a>
       </div>
       <div class="story-info">
-        <span>{{$ctrl.story.score}} by {{$ctrl.story.by}} at {{$ctrl.story.time}} | {{$ctrl.story.kids.length}} Comments </span>
+        <span>{{$ctrl.story.score}} by {{$ctrl.story.by}} {{$ctrl.story.time}} | {{$ctrl.story.descendants}} Comments </span>
       </div>
     </li>`
 }
@@ -132,7 +132,6 @@ module.exports = function() {
     let hackerNewsTime = time.fromNow()
     return {
       _id: id.toString(),
-      _ref: story._ref,
       title: story.title,
       by: story.by,
       time: hackerNewsTime,
@@ -168,10 +167,14 @@ module.exports = function ($http) {
   const baseUrl = 'https://hacker-news.firebaseio.com/v0'
   let listeners = []
 
+  if(window) {
+    window.db = db
+  }
+
   return {
     getAllNews: getAllNews,
     getNews: getNews,
-    trackDBChanges: dbChanges,
+    trackDBChanges: listenForDbChanges,
     getDocsByWord: getDocsByWord,
     update: function (fn) {
       listeners.push(fn)
@@ -196,9 +199,7 @@ module.exports = function ($http) {
     return new Promise((resolve,reject) => {
       $http.get(`${baseUrl}/${word}stories.json`)
         .then((newStoryIds) => newStoryIds.data.slice(0, 30))
-        .then((top30StoryIds) => {
-          return Promise.all(top30StoryIds.map((storyId) => $http.get(`${baseUrl}/item/${storyId}.json`)))
-        })
+        .then((top30StoryIds) => Promise.all(top30StoryIds.map((storyId) => $http.get(`${baseUrl}/item/${storyId}.json`))))
         .then((promiseData) => cleanBulkData(promiseData,word))
         .then((cleanData) => {
           resolve(cleanData)
@@ -213,16 +214,32 @@ module.exports = function ($http) {
   }
 
   function bulkInsert (items) {
-    return db.bulkDocs(items)
+    items.forEach((itemToSave) => updateDoc(itemToSave))
   }
 
-  function dbChanges () {
+  function listenForDbChanges () {
     db.changes({
       since: 'now',
       live: true,
       include_docs: true
     })
-    .on('change',(change) => getDocsByWord(change.doc.internalType))
+    .on('change', (change) => getDocsByWord(change.doc.internalType))
+  }
+
+  function updateDoc (hackItem) {
+    db.get(hackItem._id)
+      .then((doc) => {
+        if(doc.descendants !== hackItem.descendants || doc.score !== hackItem.score) {
+          return db.put(Object.assign(doc,hackItem))
+                   .catch((err) => console.log('Error updating item', err))
+        }
+      })
+      .catch((err) => {
+        if(err.name === "not_found") {
+          db.put(hackItem)
+            .catch((error) => console.log("TROUBLE SAVING NEW ITEM", error))
+        }
+      })
   }
 }
 

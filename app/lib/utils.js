@@ -14,7 +14,6 @@ module.exports = function() {
     let hackerNewsTime = time.fromNow()
     return {
       _id: id.toString(),
-      _ref: story._ref,
       title: story.title,
       by: story.by,
       time: hackerNewsTime,
