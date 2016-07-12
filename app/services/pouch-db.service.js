@@ -1,5 +1,3 @@
-var { filterByInternalType, cleanBulkData } = require('../lib/utils')()
-
 module.exports = function () {
   const PouchDB = require('pouchdb')
   let db, pouchSyncUrl
@@ -15,7 +13,7 @@ module.exports = function () {
       live: true,
       retry: true
     }).on('change', function (info) {
-      console.log("CHANGE", info)
+      console.log('CHANGE', info)
     }).on('complete', function (info) {
       console.log('COMPLETE', info)
     }).on('error', function (err) {

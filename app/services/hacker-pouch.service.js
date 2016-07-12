@@ -4,11 +4,14 @@ module.exports = function ($http, PouchDBService) {
   const baseUrl = 'https://hacker-news.firebaseio.com/v0'
   const { db, bulkInsert, updateDoc } = PouchDBService.init('hacker-pouch')
   let listeners = []
+  let offset = 31
+  let currentFilteredWord = 'top'
 
   return {
     getAllNews: getAllNews,
     getNews: getNews,
     getDocsByWord: getDocsByWord,
+    fetchNextPage: fetchNextPage,
     update: function (fn) {
       listeners.push(fn)
     }
@@ -16,6 +19,8 @@ module.exports = function ($http, PouchDBService) {
 
   function getDocsByWord (word) {
     word = word || 'top'
+    offset = 31
+    currentFilteredWord = word
     getNews(word)
     db.allDocs({include_docs: true})
       .then((data) => filterByInternalType(data, word))
@@ -54,4 +59,12 @@ module.exports = function ($http, PouchDBService) {
     console.log('ERROR', err)
   }
 
+  function fetchNextPage () {
+    db.allDocs({include_docs: true})
+      .then((data) => filterByInternalType(data, currentFilteredWord))
+      .then((paginatedData) => cleanBulkData(paginatedData, currentFilteredWord))
+      .then((cleanData) => listeners[0](_.clone(cleanData.slice(offset, offset + 30))))
+      .then(() => offset += 30)
+      .catch(handleErrors)
+  }
 }

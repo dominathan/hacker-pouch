@@ -8,6 +8,7 @@ var RootComponent = require('./components/root')
 var NavBarComponent = require('./components/navbar')
 var StoryContainerComponent = require('./components/story-container')
 var StoryComponent = require('./components/story')
+var PaginationComponent = require('./components/pagination')
 
 angular
   .module('hacker-pouch', [])
@@ -17,8 +18,9 @@ angular
   .component('navbar', NavBarComponent)
   .component('storyContainer', StoryContainerComponent)
   .component('story', StoryComponent)
+  .component('pagination', PaginationComponent)
 
-},{"./components/navbar":2,"./components/root":3,"./components/story":5,"./components/story-container":4,"./services/hacker-pouch.service":7,"./services/pouch-db.service":8,"angular":10,"lodash":20}],2:[function(require,module,exports){
+},{"./components/navbar":2,"./components/pagination":3,"./components/root":4,"./components/story":6,"./components/story-container":5,"./services/hacker-pouch.service":8,"./services/pouch-db.service":9,"angular":11,"lodash":21}],2:[function(require,module,exports){
 module.exports = {
   controller: ['HackerPouchService', controller],
 
@@ -47,6 +49,25 @@ function controller (HackerPouchService) {
 }
 
 },{}],3:[function(require,module,exports){
+module.exports = {
+  bindings: {
+    stories: '<'
+  },
+
+  template: `
+    <ul class='pagination'>
+      <li ng-click='$ctrl.nextPage()'> <-- More --> </li>
+    </ul>`,
+
+  controller: ['HackerPouchService', controller]
+}
+
+function controller (HackerPouchService) {
+  const $ctrl = this
+  $ctrl.nextPage = () => HackerPouchService.fetchNextPage()
+}
+
+},{}],4:[function(require,module,exports){
 module.exports = {
   controller: ['$scope', 'HackerPouchService', controller],
 
@@ -79,7 +100,7 @@ function controller ($scope, HackerPouchService) {
   })
 }
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 module.exports = {
   bindings: {
     stories: '<'
@@ -90,10 +111,11 @@ module.exports = {
       <ul>
         <story ng-repeat="story in $ctrl.stories track by $index" index='$index' story='story'></story>
       </ul>
+      <pagination></pagination>
     </div>`
 }
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 module.exports = {
   bindings: {
     story: '<',
@@ -113,7 +135,7 @@ module.exports = {
     </li>`
 }
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var moment = require('moment')
 
 module.exports = function () {
@@ -152,18 +174,21 @@ module.exports = function () {
   }
 }
 
-},{"moment":21}],7:[function(require,module,exports){
+},{"moment":22}],8:[function(require,module,exports){
 var { filterByInternalType, cleanBulkData } = require('../lib/utils')()
 
 module.exports = function ($http, PouchDBService) {
   const baseUrl = 'https://hacker-news.firebaseio.com/v0'
   const { db, bulkInsert, updateDoc } = PouchDBService.init('hacker-pouch')
   let listeners = []
+  let offset = 31
+  let currentFilteredWord = 'top'
 
   return {
     getAllNews: getAllNews,
     getNews: getNews,
     getDocsByWord: getDocsByWord,
+    fetchNextPage: fetchNextPage,
     update: function (fn) {
       listeners.push(fn)
     }
@@ -171,6 +196,8 @@ module.exports = function ($http, PouchDBService) {
 
   function getDocsByWord (word) {
     word = word || 'top'
+    offset = 31
+    currentFilteredWord = word
     getNews(word)
     db.allDocs({include_docs: true})
       .then((data) => filterByInternalType(data, word))
@@ -209,11 +236,17 @@ module.exports = function ($http, PouchDBService) {
     console.log('ERROR', err)
   }
 
+  function fetchNextPage () {
+    db.allDocs({include_docs: true})
+      .then((data) => filterByInternalType(data, currentFilteredWord))
+      .then((paginatedData) => cleanBulkData(paginatedData, currentFilteredWord))
+      .then((cleanData) => listeners[0](_.clone(cleanData.slice(offset, offset + 30))))
+      .then(() => offset += 30)
+      .catch(handleErrors)
+  }
 }
 
-},{"../lib/utils":6}],8:[function(require,module,exports){
-var { filterByInternalType, cleanBulkData } = require('../lib/utils')()
-
+},{"../lib/utils":7}],9:[function(require,module,exports){
 module.exports = function () {
   const PouchDB = require('pouchdb')
   let db, pouchSyncUrl
@@ -229,7 +262,7 @@ module.exports = function () {
       live: true,
       retry: true
     }).on('change', function (info) {
-      console.log("CHANGE", info)
+      console.log('CHANGE', info)
     }).on('complete', function (info) {
       console.log('COMPLETE', info)
     }).on('error', function (err) {
@@ -283,7 +316,7 @@ module.exports = function () {
   }
 }
 
-},{"../lib/utils":6,"pouchdb":26}],9:[function(require,module,exports){
+},{"pouchdb":27}],10:[function(require,module,exports){
 /**
  * @license AngularJS v1.5.7
  * (c) 2010-2016 Google, Inc. http://angularjs.org
@@ -31757,11 +31790,11 @@ $provide.value("$locale", {
 })(window);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 require('./angular');
 module.exports = angular;
 
-},{"./angular":9}],11:[function(require,module,exports){
+},{"./angular":10}],12:[function(require,module,exports){
 'use strict';
 
 module.exports = argsArray;
@@ -31781,7 +31814,7 @@ function argsArray(fun) {
     }
   };
 }
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 
 /**
  * This is the web browser implementation of `debug()`.
@@ -31951,7 +31984,7 @@ function localstorage(){
   } catch (e) {}
 }
 
-},{"./debug":13}],13:[function(require,module,exports){
+},{"./debug":14}],14:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -32150,7 +32183,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":22}],14:[function(require,module,exports){
+},{"ms":23}],15:[function(require,module,exports){
 (function (root, factory) {
   /* istanbul ignore next */
   if (typeof define === 'function' && define.amd) {
@@ -32368,7 +32401,7 @@ function coerce(val) {
   return PromisePool
 })
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -32672,7 +32705,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 (function (global){
 'use strict';
 var Mutation = global.MutationObserver || global.WebKitMutationObserver;
@@ -32745,7 +32778,7 @@ function immediate(task) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -32770,7 +32803,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 (function() { 
 
   var slice   = Array.prototype.slice,
@@ -32799,7 +32832,7 @@ if (typeof Object.create === 'function') {
   this.extend = extend;
 
 }).call(this);
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 'use strict';
 var immediate = require('immediate');
 
@@ -33054,7 +33087,7 @@ function race(iterable) {
   }
 }
 
-},{"immediate":16}],20:[function(require,module,exports){
+},{"immediate":17}],21:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -49009,7 +49042,7 @@ function race(iterable) {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 //! moment.js
 //! version : 2.14.1
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
@@ -53205,7 +53238,7 @@ function race(iterable) {
     return _moment;
 
 }));
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -53332,7 +53365,7 @@ function plural(ms, n, name) {
   return Math.ceil(ms / n) + ' ' + name + 's';
 }
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 'use strict';
 
 var MIN_MAGNITUDE = -324; // verified by -Number.MIN_VALUE
@@ -53687,7 +53720,7 @@ function numToIndexableString(num) {
   return result;
 }
 
-},{"./utils":24}],24:[function(require,module,exports){
+},{"./utils":25}],25:[function(require,module,exports){
 'use strict';
 
 function pad(str, padWith, upToLength) {
@@ -53758,7 +53791,7 @@ exports.intToDecimalForm = function (int) {
 
   return result;
 };
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 'use strict';
 exports.Map = LazyMap; // TODO: use ES6 map
 exports.Set = LazySet; // TODO: use ES6 set
@@ -53829,7 +53862,7 @@ LazySet.prototype.delete = function (key) {
   return this.store.delete(key);
 };
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 (function (process,global){
 'use strict';
 
@@ -64520,7 +64553,7 @@ PouchDB.plugin(IDBPouch)
 
 module.exports = PouchDB;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":27,"argsarray":11,"debug":12,"es6-promise-pool":14,"events":15,"inherits":17,"js-extend":18,"lie":19,"pouchdb-collate":23,"pouchdb-collections":25,"scope-eval":28,"spark-md5":29,"vuvuzela":30}],27:[function(require,module,exports){
+},{"_process":28,"argsarray":12,"debug":13,"es6-promise-pool":15,"events":16,"inherits":18,"js-extend":19,"lie":20,"pouchdb-collate":24,"pouchdb-collections":26,"scope-eval":29,"spark-md5":30,"vuvuzela":31}],28:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -64641,7 +64674,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 // Generated by CoffeeScript 1.9.2
 (function() {
   var hasProp = {}.hasOwnProperty,
@@ -64665,7 +64698,7 @@ process.umask = function() { return 0; };
 
 }).call(this);
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 (function (factory) {
     if (typeof exports === 'object') {
         // Node/CommonJS
@@ -65370,7 +65403,7 @@ process.umask = function() { return 0; };
     return SparkMD5;
 }));
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 'use strict';
 
 /**

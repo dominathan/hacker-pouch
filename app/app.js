@@ -7,6 +7,7 @@ var RootComponent = require('./components/root')
 var NavBarComponent = require('./components/navbar')
 var StoryContainerComponent = require('./components/story-container')
 var StoryComponent = require('./components/story')
+var PaginationComponent = require('./components/pagination')
 
 angular
   .module('hacker-pouch', [])
@@ -16,3 +17,4 @@ angular
   .component('navbar', NavBarComponent)
   .component('storyContainer', StoryContainerComponent)
   .component('story', StoryComponent)
+  .component('pagination', PaginationComponent)

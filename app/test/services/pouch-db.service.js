@@ -1,8 +1,4 @@
 var test = require('tape')
-var sinon = require('sinon')
-require('sinon-as-promised')
-
-var { fakeData1, fakeData2 } = require('../test-utilities/test-data')
 var PouchDBService = require('../../services/pouch-db.service')()
 
 test('PouchDB service should return functions and create DB', function (t) {
@@ -15,9 +11,8 @@ test('PouchDB service should return functions and create DB', function (t) {
   t.ok(db, 'database should exist after DB creation')
 
   db.destroy()
-    .then(function(data) {
+    .then(function (data) {
       t.ok(data, 'should be able to destroy database')
       t.end()
     })
-
 })

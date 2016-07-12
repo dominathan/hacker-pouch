@@ -20,5 +20,8 @@ module.exports = {
       {thing1: 'thing1', thing2: 'thing2'},
       {thing3: 'thing3', thing4: 'thing4'}
     ]
+  },
+  fetchNextPage: function () {
+    return 'success'
   }
 }

@@ -46,3 +46,13 @@ header {
     margin-left: 2%; }
   .container .story-index {
     color: #fa4a35; }
+
+.pagination {
+  text-align: center; }
+  .pagination li {
+    display: inline-block;
+    font-size: 1.7em;
+    color: #fa4a35; }
+    .pagination li:hover {
+      color: #fff;
+      cursor: pointer; }

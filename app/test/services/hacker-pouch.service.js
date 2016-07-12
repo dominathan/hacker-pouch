@@ -2,8 +2,6 @@ var test = require('tape')
 var sinon = require('sinon')
 require('sinon-as-promised')
 
-var { fakeData1, fakeData2 } = require('../test-utilities/test-data')
-
 var $mockHttp = {
   get: sinon.stub().resolves({data: [123141, 234432, 454533, 65457]})
 }
@@ -11,12 +9,11 @@ var $mockHttp = {
 var MockPouchDBService = {
   init(dbName) {
     return {
-      bulkInsert() {},
-      updateDoc() {},
+      bulkInsert () {},
+      updateDoc () {},
       db: {}
     }
-  },
-
+  }
 }
 
 var {
