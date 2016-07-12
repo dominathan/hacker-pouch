@@ -199,11 +199,11 @@ module.exports = function ($http) {
     })
   }
 
-  function getInfoFromHackerId(storyId) {
+  function getInfoFromHackerId (storyId) {
     return $http.get(`${baseUrl}/item/${storyId}.json`)
   }
 
-  function bulkGetInfoFromHackerIds(storyIds) {
+  function bulkGetInfoFromHackerIds (storyIds) {
     return Promise.all(storyIds.map(getInfoFromHackerId))
   }
 
