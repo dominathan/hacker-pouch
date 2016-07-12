@@ -3,6 +3,7 @@ var angular = require('angular')
 var _ = require('lodash')
 
 var HackerPouchService = require('./services/hacker-pouch.service')
+var PouchDBService = require('./services/pouch-db.service')
 var RootComponent = require('./components/root')
 var NavBarComponent = require('./components/navbar')
 var StoryContainerComponent = require('./components/story-container')
@@ -10,13 +11,14 @@ var StoryComponent = require('./components/story')
 
 angular
   .module('hacker-pouch', [])
+  .factory('PouchDBService', PouchDBService)
   .factory('HackerPouchService', HackerPouchService)
   .component('root', RootComponent)
   .component('navbar', NavBarComponent)
   .component('storyContainer', StoryContainerComponent)
   .component('story', StoryComponent)
 
-},{"./components/navbar":2,"./components/root":3,"./components/story":5,"./components/story-container":4,"./services/hacker-pouch.service":7,"angular":9,"lodash":19}],2:[function(require,module,exports){
+},{"./components/navbar":2,"./components/root":3,"./components/story":5,"./components/story-container":4,"./services/hacker-pouch.service":7,"./services/pouch-db.service":8,"angular":10,"lodash":20}],2:[function(require,module,exports){
 module.exports = {
   controller: ['HackerPouchService', controller],
 
@@ -150,21 +152,17 @@ module.exports = function () {
   }
 }
 
-},{"moment":20}],7:[function(require,module,exports){
-var { filterByInternalType,
-      cleanBulkData
-    } = require('../lib/utils')()
+},{"moment":21}],7:[function(require,module,exports){
+var { filterByInternalType, cleanBulkData } = require('../lib/utils')()
 
-module.exports = function ($http) {
-  const PouchDB = require('pouchdb')
-  const db = new PouchDB('hacker-pouch')
+module.exports = function ($http, PouchDBService) {
   const baseUrl = 'https://hacker-news.firebaseio.com/v0'
+  const { db, bulkInsert, updateDoc } = PouchDBService.init('hacker-pouch')
   let listeners = []
 
   return {
     getAllNews: getAllNews,
     getNews: getNews,
-    trackDBChanges: listenForDbChanges,
     getDocsByWord: getDocsByWord,
     update: function (fn) {
       listeners.push(fn)
@@ -211,6 +209,41 @@ module.exports = function ($http) {
     console.log('ERROR', err)
   }
 
+}
+
+},{"../lib/utils":6}],8:[function(require,module,exports){
+var { filterByInternalType, cleanBulkData } = require('../lib/utils')()
+
+module.exports = function () {
+  const PouchDB = require('pouchdb')
+  let db, pouchSyncUrl
+
+  return {
+    init: init
+  }
+
+  function init (dbName) {
+    db = dbName ? new PouchDB(dbName) : new PouchDB('hacker-pouch')
+    pouchSyncUrl = dbName ? `http://localhost:3001/db/${dbName}` : `http://localhost:3001/db/hacker-pouch`
+    db.sync(pouchSyncUrl, {
+      live: true,
+      retry: true
+    }).on('change', function (info) {
+      console.log("CHANGE", info)
+    }).on('complete', function (info) {
+      console.log('COMPLETE', info)
+    }).on('error', function (err) {
+      console.log('ERRORED OUT', err)
+    })
+
+    return {
+      bulkInsert: bulkInsert,
+      updateDoc: updateDoc,
+      db: db,
+      listenForDbChanges: listenForDbChanges
+    }
+  }
+
   function bulkInsert (items) {
     items.forEach((itemToSave) => updateDoc(itemToSave))
   }
@@ -223,7 +256,7 @@ module.exports = function ($http) {
     .on('complete', (info) => {
       if (info.results.length) {
         console.log('info for complete event', info)
-        getDocsByWord(info.results[0].doc.internalType)
+        // getDocsByWord(info.results[0].doc.internalType)
       }
     })
     .on('error', handleErrors)
@@ -244,9 +277,13 @@ module.exports = function ($http) {
         }
       })
   }
+
+  function handleErrors (err) {
+    console.log('ERROR', err)
+  }
 }
 
-},{"../lib/utils":6,"pouchdb":25}],8:[function(require,module,exports){
+},{"../lib/utils":6,"pouchdb":26}],9:[function(require,module,exports){
 /**
  * @license AngularJS v1.5.7
  * (c) 2010-2016 Google, Inc. http://angularjs.org
@@ -31720,11 +31757,11 @@ $provide.value("$locale", {
 })(window);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 require('./angular');
 module.exports = angular;
 
-},{"./angular":8}],10:[function(require,module,exports){
+},{"./angular":9}],11:[function(require,module,exports){
 'use strict';
 
 module.exports = argsArray;
@@ -31744,7 +31781,7 @@ function argsArray(fun) {
     }
   };
 }
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 
 /**
  * This is the web browser implementation of `debug()`.
@@ -31914,7 +31951,7 @@ function localstorage(){
   } catch (e) {}
 }
 
-},{"./debug":12}],12:[function(require,module,exports){
+},{"./debug":13}],13:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -32113,7 +32150,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":21}],13:[function(require,module,exports){
+},{"ms":22}],14:[function(require,module,exports){
 (function (root, factory) {
   /* istanbul ignore next */
   if (typeof define === 'function' && define.amd) {
@@ -32331,7 +32368,7 @@ function coerce(val) {
   return PromisePool
 })
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -32635,7 +32672,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function (global){
 'use strict';
 var Mutation = global.MutationObserver || global.WebKitMutationObserver;
@@ -32708,7 +32745,7 @@ function immediate(task) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -32733,7 +32770,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function() { 
 
   var slice   = Array.prototype.slice,
@@ -32762,7 +32799,7 @@ if (typeof Object.create === 'function') {
   this.extend = extend;
 
 }).call(this);
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 'use strict';
 var immediate = require('immediate');
 
@@ -33017,7 +33054,7 @@ function race(iterable) {
   }
 }
 
-},{"immediate":15}],19:[function(require,module,exports){
+},{"immediate":16}],20:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -48972,7 +49009,7 @@ function race(iterable) {
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 //! moment.js
 //! version : 2.14.1
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
@@ -53168,7 +53205,7 @@ function race(iterable) {
     return _moment;
 
 }));
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -53295,7 +53332,7 @@ function plural(ms, n, name) {
   return Math.ceil(ms / n) + ' ' + name + 's';
 }
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 'use strict';
 
 var MIN_MAGNITUDE = -324; // verified by -Number.MIN_VALUE
@@ -53650,7 +53687,7 @@ function numToIndexableString(num) {
   return result;
 }
 
-},{"./utils":23}],23:[function(require,module,exports){
+},{"./utils":24}],24:[function(require,module,exports){
 'use strict';
 
 function pad(str, padWith, upToLength) {
@@ -53721,7 +53758,7 @@ exports.intToDecimalForm = function (int) {
 
   return result;
 };
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 'use strict';
 exports.Map = LazyMap; // TODO: use ES6 map
 exports.Set = LazySet; // TODO: use ES6 set
@@ -53792,7 +53829,7 @@ LazySet.prototype.delete = function (key) {
   return this.store.delete(key);
 };
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 (function (process,global){
 'use strict';
 
@@ -64483,7 +64520,7 @@ PouchDB.plugin(IDBPouch)
 
 module.exports = PouchDB;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":26,"argsarray":10,"debug":11,"es6-promise-pool":13,"events":14,"inherits":16,"js-extend":17,"lie":18,"pouchdb-collate":22,"pouchdb-collections":24,"scope-eval":27,"spark-md5":28,"vuvuzela":29}],26:[function(require,module,exports){
+},{"_process":27,"argsarray":11,"debug":12,"es6-promise-pool":14,"events":15,"inherits":17,"js-extend":18,"lie":19,"pouchdb-collate":23,"pouchdb-collections":25,"scope-eval":28,"spark-md5":29,"vuvuzela":30}],27:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -64604,7 +64641,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 // Generated by CoffeeScript 1.9.2
 (function() {
   var hasProp = {}.hasOwnProperty,
@@ -64628,7 +64665,7 @@ process.umask = function() { return 0; };
 
 }).call(this);
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 (function (factory) {
     if (typeof exports === 'object') {
         // Node/CommonJS
@@ -65333,7 +65370,7 @@ process.umask = function() { return 0; };
     return SparkMD5;
 }));
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 'use strict';
 
 /**

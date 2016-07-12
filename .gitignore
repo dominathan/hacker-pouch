@@ -1,3 +1,9 @@
 node_modules/
 hacker-pouch/
 npm-debug.log
+_replicator/
+_users/
+pouch__all_dbs__/
+test-db/
+config.json
+*.txt

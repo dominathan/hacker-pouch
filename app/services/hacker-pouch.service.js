@@ -1,17 +1,13 @@
-var { filterByInternalType,
-      cleanBulkData
-    } = require('../lib/utils')()
+var { filterByInternalType, cleanBulkData } = require('../lib/utils')()
 
-module.exports = function ($http) {
-  const PouchDB = require('pouchdb')
-  const db = new PouchDB('hacker-pouch')
+module.exports = function ($http, PouchDBService) {
   const baseUrl = 'https://hacker-news.firebaseio.com/v0'
+  const { db, bulkInsert, updateDoc } = PouchDBService.init('hacker-pouch')
   let listeners = []
 
   return {
     getAllNews: getAllNews,
     getNews: getNews,
-    trackDBChanges: listenForDbChanges,
     getDocsByWord: getDocsByWord,
     update: function (fn) {
       listeners.push(fn)
@@ -58,37 +54,4 @@ module.exports = function ($http) {
     console.log('ERROR', err)
   }
 
-  function bulkInsert (items) {
-    items.forEach((itemToSave) => updateDoc(itemToSave))
-  }
-
-  function listenForDbChanges () {
-    db.changes({
-      since: 'now',
-      include_docs: true
-    })
-    .on('complete', (info) => {
-      if (info.results.length) {
-        console.log('info for complete event', info)
-        getDocsByWord(info.results[0].doc.internalType)
-      }
-    })
-    .on('error', handleErrors)
-  }
-
-  function updateDoc (hackItem) {
-    db.get(hackItem._id)
-      .then((doc) => {
-        if (doc.descendants !== hackItem.descendants || doc.score !== hackItem.score) {
-          return db.put(Object.assign(doc, hackItem))
-                   .catch((err) => console.log('Error updating item', err))
-        }
-      })
-      .catch((err) => {
-        if (err.name === 'not_found') {
-          db.put(hackItem)
-            .catch((error) => console.log('TROUBLE SAVING NEW ITEM', error))
-        }
-      })
-  }
 }
