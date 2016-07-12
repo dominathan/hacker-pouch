@@ -7,6 +7,11 @@ To get started, run `npm install && npm run dev-serve`.  This will install all n
 * node-sass
 * watchify
 
+### To test
+`npm run test`
+
 ### To Do
 
 * Show Component for stories that have text (e.g., SHOW HN, JOBS)
+* Add backend pouch with express PouchDB
+* Add pagination using pouchdb

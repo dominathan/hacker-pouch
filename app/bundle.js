@@ -36,7 +36,7 @@ module.exports = {
     </header>`
 }
 
-function controller(HackerPouchService) {
+function controller (HackerPouchService) {
   const $ctrl = this
 
   $ctrl.getDocs = function (word) {
@@ -53,32 +53,28 @@ module.exports = {
     <story-container stories='$ctrl.stories'></story-container>`
 }
 
-function controller($scope, HackerPouchService) {
+function controller ($scope, HackerPouchService) {
   const $ctrl = this
   $ctrl.stories = []
 
   HackerPouchService.getNews('top')
-    .then(function(stories) {
-      $scope.$apply(function(){
+    .then(function (stories) {
+      $scope.$apply(function () {
         $ctrl.stories = stories
       })
     })
-    .then(function() {
+    .then(function () {
       HackerPouchService.getAllNews()
     })
-    .then(function() {
-      // HackerPouchService.trackDBChanges()
-    })
-    .catch(function(err) {
-      console.log("BREAKAGE",err)
+    .catch(function (err) {
+      console.log('BREAKAGE', err)
     })
 
   HackerPouchService.update(function (stories) {
-    $scope.$apply(function() {
+    $scope.$apply(function () {
       $ctrl.stories = stories
     })
   })
-
 }
 
 },{}],4:[function(require,module,exports){
@@ -118,14 +114,14 @@ module.exports = {
 },{}],6:[function(require,module,exports){
 var moment = require('moment')
 
-module.exports = function() {
+module.exports = function () {
   return {
     cleanStory: cleanStory,
     cleanBulkData: cleanBulkData,
     filterByInternalType: filterByInternalType
   }
 
-  function cleanStory(story, word) {
+  function cleanStory (story, word) {
     story = story.data || story.doc
     let id = story.id || story._id
     let time = moment(new Date(story.time * 1000))
@@ -145,19 +141,17 @@ module.exports = function() {
     }
   }
 
-  function filterByInternalType(data,type) {
+  function filterByInternalType (data, type) {
     return data.rows.filter((doc) => doc.doc.internalType === type)
   }
 
-  function cleanBulkData(bulkData, word) {
-    return bulkData.map((item) => cleanStory(item,word))
+  function cleanBulkData (bulkData, word) {
+    return bulkData.map((item) => cleanStory(item, word))
   }
-
 }
 
 },{"moment":20}],7:[function(require,module,exports){
-var { cleanStory,
-      filterByInternalType,
+var { filterByInternalType,
       cleanBulkData
     } = require('../lib/utils')()
 
@@ -166,10 +160,6 @@ module.exports = function ($http) {
   const db = new PouchDB('hacker-pouch')
   const baseUrl = 'https://hacker-news.firebaseio.com/v0'
   let listeners = []
-
-  if(window) {
-    window.db = db
-  }
 
   return {
     getAllNews: getAllNews,
@@ -185,22 +175,22 @@ module.exports = function ($http) {
     word = word || 'top'
     getNews(word)
     db.allDocs({include_docs: true})
-      .then((data) => filterByInternalType(data,word))
-      .then((filteredData) => cleanBulkData(filteredData,word))
-      .then((cleanData) => listeners[0](_.clone(cleanData.slice(0,30))))
+      .then((data) => filterByInternalType(data, word))
+      .then((filteredData) => cleanBulkData(filteredData, word))
+      .then((cleanData) => listeners[0](_.clone(cleanData.slice(0, 30))))
       .catch(handleErrors)
   }
 
   function getAllNews () {
-    ['top','best','new','job','ask','show'].forEach(getNews)
+    ['top', 'best', 'new', 'job', 'ask', 'show'].forEach(getNews)
   }
 
   function getNews (word) {
-    return new Promise((resolve,reject) => {
+    return new Promise((resolve, reject) => {
       $http.get(`${baseUrl}/${word}stories.json`)
         .then((newStoryIds) => newStoryIds.data.slice(0, 30))
-        .then((top30StoryIds) => Promise.all(top30StoryIds.map((storyId) => $http.get(`${baseUrl}/item/${storyId}.json`))))
-        .then((promiseData) => cleanBulkData(promiseData,word))
+        .then(bulkGetInfoFromHackerIds)
+        .then((promiseData) => cleanBulkData(promiseData, word))
         .then((cleanData) => {
           resolve(cleanData)
           bulkInsert(cleanData)
@@ -209,8 +199,16 @@ module.exports = function ($http) {
     })
   }
 
+  function getInfoFromHackerId(storyId) {
+    return $http.get(`${baseUrl}/item/${storyId}.json`)
+  }
+
+  function bulkGetInfoFromHackerIds(storyIds) {
+    return Promise.all(storyIds.map(getInfoFromHackerId))
+  }
+
   function handleErrors (err) {
-    console.log("ERROR", err)
+    console.log('ERROR', err)
   }
 
   function bulkInsert (items) {
@@ -220,24 +218,29 @@ module.exports = function ($http) {
   function listenForDbChanges () {
     db.changes({
       since: 'now',
-      live: true,
       include_docs: true
     })
-    .on('change', (change) => getDocsByWord(change.doc.internalType))
+    .on('complete', (info) => {
+      if (info.results.length) {
+        console.log('info for complete event', info)
+        getDocsByWord(info.results[0].doc.internalType)
+      }
+    })
+    .on('error', handleErrors)
   }
 
   function updateDoc (hackItem) {
     db.get(hackItem._id)
       .then((doc) => {
-        if(doc.descendants !== hackItem.descendants || doc.score !== hackItem.score) {
-          return db.put(Object.assign(doc,hackItem))
+        if (doc.descendants !== hackItem.descendants || doc.score !== hackItem.score) {
+          return db.put(Object.assign(doc, hackItem))
                    .catch((err) => console.log('Error updating item', err))
         }
       })
       .catch((err) => {
-        if(err.name === "not_found") {
+        if (err.name === 'not_found') {
           db.put(hackItem)
-            .catch((error) => console.log("TROUBLE SAVING NEW ITEM", error))
+            .catch((error) => console.log('TROUBLE SAVING NEW ITEM', error))
         }
       })
   }

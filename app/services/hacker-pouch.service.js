@@ -36,7 +36,7 @@ module.exports = function ($http) {
     return new Promise((resolve, reject) => {
       $http.get(`${baseUrl}/${word}stories.json`)
         .then((newStoryIds) => newStoryIds.data.slice(0, 30))
-        .then((top30StoryIds) => Promise.all(top30StoryIds.map((storyId) => $http.get(`${baseUrl}/item/${storyId}.json`))))
+        .then(bulkGetInfoFromHackerIds)
         .then((promiseData) => cleanBulkData(promiseData, word))
         .then((cleanData) => {
           resolve(cleanData)
@@ -44,6 +44,14 @@ module.exports = function ($http) {
         })
         .catch(handleErrors)
     })
+  }
+
+  function getInfoFromHackerId(storyId) {
+    return $http.get(`${baseUrl}/item/${storyId}.json`)
+  }
+
+  function bulkGetInfoFromHackerIds(storyIds) {
+    return Promise.all(storyIds.map(getInfoFromHackerId))
   }
 
   function handleErrors (err) {
@@ -57,10 +65,15 @@ module.exports = function ($http) {
   function listenForDbChanges () {
     db.changes({
       since: 'now',
-      live: true,
       include_docs: true
     })
-    .on('change', (change) => getDocsByWord(change.doc.internalType))
+    .on('complete', (info) => {
+      if (info.results.length) {
+        console.log('info for complete event', info)
+        getDocsByWord(info.results[0].doc.internalType)
+      }
+    })
+    .on('error', handleErrors)
   }
 
   function updateDoc (hackItem) {
