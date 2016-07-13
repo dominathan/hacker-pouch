@@ -23,6 +23,7 @@ module.exports = function () {
       score: story.score,
       text: story.text,
       type: story.type,
+      upvotes: story.upvotes || 0,
       internalType: word || story.internalType
     }
   }

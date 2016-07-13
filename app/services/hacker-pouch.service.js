@@ -12,9 +12,19 @@ module.exports = function ($http, PouchDBService) {
     getNews: getNews,
     getDocsByWord: getDocsByWord,
     fetchNextPage: fetchNextPage,
+    saveUpvote: saveUpvote,
     update: function (fn) {
       listeners.push(fn)
     }
+  }
+
+  function saveUpvote (storyId) {
+    db.get(storyId)
+      .then((doc) => {
+        doc.upvotes ? doc.upvotes += 1 : doc.upvotes = 1
+        db.put(doc).catch(handleErrors)
+      })
+      .catch(handleErrors)
   }
 
   function getDocsByWord (word) {

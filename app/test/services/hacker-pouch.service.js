@@ -7,7 +7,7 @@ var $mockHttp = {
 }
 
 var MockPouchDBService = {
-  init(dbName) {
+  init (dbName) {
     return {
       bulkInsert () {},
       updateDoc () {},

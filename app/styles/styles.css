@@ -43,9 +43,10 @@ header {
     text-decoration: none; }
   .container .story-info span {
     color: #000;
-    margin-left: 2%; }
+    margin-left: 4%; }
   .container .story-index {
-    color: #fa4a35; }
+    color: #fa4a35;
+    margin-right: 2%; }
 
 .pagination {
   text-align: center; }
@@ -56,3 +57,13 @@ header {
     .pagination li:hover {
       color: #fff;
       cursor: pointer; }
+
+.triangle {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 13px 15px 13px;
+  border-color: transparent transparent #b9bcbf transparent; }
+  .triangle:hover {
+    border-color: transparent transparent #000 transparent; }

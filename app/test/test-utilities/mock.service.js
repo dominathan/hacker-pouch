@@ -23,5 +23,8 @@ module.exports = {
   },
   fetchNextPage: function () {
     return 'success'
+  },
+  saveUpvote: function () {
+    return 'yay'
   }
 }

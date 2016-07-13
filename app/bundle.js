@@ -109,7 +109,7 @@ module.exports = {
   template: `
     <div class='container'>
       <ul>
-        <story ng-repeat="story in $ctrl.stories track by $index" index='$index' story='story'></story>
+        <story ng-repeat="story in $ctrl.stories track by story._id" index='$index' story='story'></story>
       </ul>
       <pagination></pagination>
     </div>`
@@ -122,17 +122,31 @@ module.exports = {
     index: '<'
   },
 
+  controller: ['HackerPouchService', controller],
+
   template: `
     <li class="story">
       <div class="story-title">
+        <span class="story-index">{{$ctrl.index + 1}}. </span>
+        <div ng-show='$ctrl.showUpvote' class="triangle" ng-click='$ctrl.submitUpvote($ctrl.story._id)'></div>
         <a href="{{$ctrl.story.url}}">
-          <span class="story-index">{{$ctrl.index + 1}}.  </span>{{$ctrl.story.title}}
+          {{$ctrl.story.title}}
         </a>
       </div>
       <div class="story-info">
-        <span>{{$ctrl.story.score}} by {{$ctrl.story.by}} {{$ctrl.story.time}} | {{$ctrl.story.descendants}} Comments </span>
+        <span>{{$ctrl.story.score + $ctrl.story.upvotes}} by {{$ctrl.story.by}} {{$ctrl.story.time}} | {{$ctrl.story.descendants}} Comments </span>
       </div>
     </li>`
+}
+
+function controller (HackerPouchService) {
+  const $ctrl = this
+
+  $ctrl.showUpvote = true
+  $ctrl.submitUpvote = (storyId) => {
+    HackerPouchService.saveUpvote(storyId)
+    $ctrl.showUpvote = false
+  }
 }
 
 },{}],7:[function(require,module,exports){
@@ -161,6 +175,7 @@ module.exports = function () {
       score: story.score,
       text: story.text,
       type: story.type,
+      upvotes: story.upvotes || 0,
       internalType: word || story.internalType
     }
   }
@@ -189,9 +204,19 @@ module.exports = function ($http, PouchDBService) {
     getNews: getNews,
     getDocsByWord: getDocsByWord,
     fetchNextPage: fetchNextPage,
+    saveUpvote: saveUpvote,
     update: function (fn) {
       listeners.push(fn)
     }
+  }
+
+  function saveUpvote (storyId) {
+    db.get(storyId)
+      .then((doc) => {
+        doc.upvotes ? doc.upvotes += 1 : doc.upvotes = 1
+        db.put(doc).catch(handleErrors)
+      })
+      .catch(handleErrors)
   }
 
   function getDocsByWord (word) {

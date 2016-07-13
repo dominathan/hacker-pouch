@@ -6,7 +6,7 @@ module.exports = {
   template: `
     <div class='container'>
       <ul>
-        <story ng-repeat="story in $ctrl.stories track by $index" index='$index' story='story'></story>
+        <story ng-repeat="story in $ctrl.stories track by story._id" index='$index' story='story'></story>
       </ul>
       <pagination></pagination>
     </div>`

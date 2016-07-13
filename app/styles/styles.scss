@@ -53,10 +53,11 @@ header {
   }
   .story-info span{
     color: #000;
-    margin-left: 2%;
+    margin-left: 4%;
   }
   .story-index {
     color: rgb(250,74,53);
+    margin-right: 2%;
   }
 }
 
@@ -70,5 +71,17 @@ header {
       color: #fff;
       cursor: pointer;
     }
+  }
+}
+
+.triangle {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 13px 15px 13px;
+  border-color: transparent transparent #b9bcbf transparent;
+  &:hover {
+    border-color: transparent transparent #000 transparent;
   }
 }
