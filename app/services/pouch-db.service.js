@@ -8,7 +8,7 @@ module.exports = function () {
 
   function init (dbName) {
     db = dbName ? new PouchDB(dbName) : new PouchDB('hacker-pouch')
-    pouchSyncUrl = dbName ? `http://localhost:3001/db/${dbName}` : `http://localhost:3001/db/hacker-pouch`
+    pouchSyncUrl = dbName ? `http://${document.location.hostname}/db/${dbName}` : `http://${document.location.hostname}/db/hacker-pouch`
     db.sync(pouchSyncUrl, {
       live: true,
       retry: true
